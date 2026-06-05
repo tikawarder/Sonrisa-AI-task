@@ -1,0 +1,21 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<h1>Matched Events (last 100)</h1>
+<table>
+    <thead>
+        <tr><th>Title</th><th>Source</th><th>Score</th><th>Time</th></tr>
+    </thead>
+    <tbody>
+    {% for event in events %}
+        <tr>
+            <td><a href="{{ event.event_url }}">{{ event.event_title }}</a></td>
+            <td>{{ event.source }}</td>
+            <td>{{ "%.2f"|format(event.relevance_score) if event.relevance_score else "—" }}</td>
+            <td>{{ event.matched_at.strftime("%Y-%m-%d %H:%M") }}</td>
+        </tr>
+    {% else %}
+        <tr><td colspan="4">No events found.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

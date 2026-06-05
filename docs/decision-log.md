@@ -51,6 +51,21 @@
 
 ---
 
+## 2026-06-05 — Decision: "JWT token vs session cookie authentication"
+
+**Options considered:**
+1. Full JWT — Bearer tokens on all endpoints, python-jose + passlib, ~100 lines
+2. HTTP Basic Auth only — single ADMIN_PASSWORD env var, 20 lines, no user separation
+3. JWT for API + Basic Auth for admin UI — two patterns, proportionate to scope
+
+**Chosen:** Option 3 — JWT for API endpoints, HTTP Basic Auth for admin UI
+
+**Reason:** The brief asks for both an API and an admin view. Using JWT on the API demonstrates the expected pattern for a production system without over-engineering. Basic Auth on the Jinja2 admin UI keeps that layer simple — the admin view is CRUD only, and a single admin password is sufficient for a prototype.
+
+**Tradeoffs accepted:** Two auth systems in one codebase adds minor complexity. Acceptable because they serve different surfaces (JSON API vs rendered HTML) and don't interact.
+
+---
+
 ## 2026-06-05 — Validation: celery-worker
 
 **Rejected:**
@@ -73,6 +88,20 @@
 **Accepted:** Library choices (slack-sdk, httpx, jinja2), error handling pattern, dispatcher CHANNEL_REGISTRY, ABC usage.
 
 **Corrections applied:** 3 fixes in email.py, slack.py, webhook.py. 12/12 tests still pass.
+
+---
+
+## 2026-06-05 — Validation: api
+
+**Rejected:**
+- `events.html` — 5 `<th>` headers but 4 `<td>` cells — "Matched by" column exists in header but has no corresponding data column in `MatchedEvent` ORM model. BLOCKING: table renders broken. Fixed by removing the orphan column header.
+- `UserRole.user` (lowercase) in tests — `UserRole` enum uses uppercase `.USER`. All test helpers corrected.
+- `passlib + bcrypt 4.x` incompatibility — `hash_password()` raises `ValueError: password cannot be longer than 72 bytes` in test context due to library version mismatch. Not a production bug (Docker pins versions), but tests must mock `hash_password` to avoid depending on the bcrypt C extension behavior.
+- Auth test asserting `status_code == 403` for missing Bearer token — FastAPI returns 401, not 403, from `HTTPBearer`. Corrected assertion.
+
+**Accepted:** JWT utilities (python-jose, passlib), `secrets.compare_digest` for Basic Auth, Jinja2Templates autoescape default, CRUD router structure, dependency injection pattern, 14 new API tests pass.
+
+**Corrections applied:** 4 fixes — events.html column count; UserRole casing in 2 test files; hash_password mocked in register tests; 401 vs 403 assertion corrected. 51/51 tests pass after fixes.
 
 ---
 

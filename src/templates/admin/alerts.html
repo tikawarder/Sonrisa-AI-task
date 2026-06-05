@@ -1,0 +1,22 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<h1>Alerts</h1>
+<table>
+    <thead>
+        <tr><th>ID</th><th>Name</th><th>Keywords</th><th>Active</th><th>Created</th></tr>
+    </thead>
+    <tbody>
+    {% for alert in alerts %}
+        <tr>
+            <td>{{ alert.id }}</td>
+            <td>{{ alert.name }}</td>
+            <td>{{ alert.keywords | join(", ") }}</td>
+            <td>{{ "Yes" if alert.is_active else "No" }}</td>
+            <td>{{ alert.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+        </tr>
+    {% else %}
+        <tr><td colspan="5">No alerts found.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

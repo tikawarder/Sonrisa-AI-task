@@ -103,3 +103,22 @@ All implementation prompts, decisions, and corrections made during the project.
 - Considered separate Celery Beat process in docker-compose. Kept `worker --beat` combined for simplicity — adding a 5th service adds complexity with no benefit for a prototype.
 
 **Corrections:** Fixed one wrong test assertion. 5/5 pass.
+
+---
+
+## 2026-06-05 — /implement api
+
+**Prompt:** Implement the full API layer: JWT auth utilities, FastAPI dependencies, all routers (auth, alerts, channels, admin), Jinja2 admin templates, tests.
+
+**What I received:** 11 files — `src/api/auth.py`, `deps.py`, `main.py`, `schemas.py`, `routers/{auth,alerts,channels,admin}.py`, `src/templates/admin/{base,index,alerts,events}.html`, `tests/test_api_{auth,alerts}.py`.
+
+**What I rejected:**
+- `events.html` — "Matched by" header column had no matching `<td>`. `MatchedEvent` ORM has no `matched_by` field. BLOCKING. Removed orphan column.
+- `UserRole.user` lowercase in test helpers — enum is `UserRole.USER`. Corrected in both test files.
+- `hash_password()` called directly in register tests — fails at test time due to `passlib/bcrypt 4.x` version mismatch (`ValueError: password cannot be longer than 72 bytes`). Not a production bug. Mocked `hash_password` in test fixtures.
+- Test asserting `status_code == 403` for missing Bearer token — FastAPI `HTTPBearer` returns `401`, not `403`. Corrected assertion.
+- Initial `Alert(...)` constructor missing `is_active=True` and `created_at` — SQLAlchemy `default=` and `server_default=` don't populate Python-level attributes until after DB flush. Added explicit values in `create_alert` and `register` router functions.
+
+**What I accepted:** JWT using python-jose + passlib, `secrets.compare_digest` for Basic Auth, Jinja2Templates autoescape (FastAPI default for `.html`), dependency injection pattern, router structure matching architecture.md, SSRF guard in webhook channel (carried forward).
+
+**Corrections made:** 5 fixes applied during validation. 51/51 tests pass.

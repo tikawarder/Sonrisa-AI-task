@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alert System Admin</title>
+    <style>
+        body { font-family: sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
+        nav { background: #333; color: white; padding: 1rem 2rem; display: flex; gap: 1.5rem; align-items: center; }
+        nav a { color: white; text-decoration: none; }
+        nav a:hover { text-decoration: underline; }
+        main { padding: 2rem; }
+        table { border-collapse: collapse; width: 100%; background: white; }
+        th, td { border: 1px solid #ddd; padding: 0.5rem 1rem; text-align: left; }
+        th { background: #eee; }
+        .stat { display: inline-block; background: white; padding: 1rem 2rem; margin: 0.5rem; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .stat strong { display: block; font-size: 2rem; }
+    </style>
+</head>
+<body>
+<nav>
+    <strong>Admin</strong>
+    <a href="/admin/">Dashboard</a>
+    <a href="/admin/alerts">Alerts</a>
+    <a href="/admin/events">Events</a>
+</nav>
+<main>
+{% block content %}{% endblock %}
+</main>
+</body>
+</html>

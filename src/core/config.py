@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     SMTP_USER: str = ""
     SMTP_PASSWORD: str = ""
     SLACK_BOT_TOKEN: str = ""
+    ADMIN_PASSWORD: str = "change-me-admin"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

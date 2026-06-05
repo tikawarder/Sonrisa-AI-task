@@ -1,0 +1,9 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<h1>Dashboard</h1>
+<div>
+    <div class="stat"><strong>{{ user_count }}</strong> Users</div>
+    <div class="stat"><strong>{{ alert_count }}</strong> Alerts</div>
+    <div class="stat"><strong>{{ event_count }}</strong> Matched Events</div>
+</div>
+{% endblock %}
