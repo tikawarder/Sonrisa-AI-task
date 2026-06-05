@@ -29,5 +29,5 @@ This is a job interview evaluation task — the process and decision-making matt
 
 ## Tech Stack
 
-Python + FastAPI, PostgreSQL + SQLAlchemy, Celery + Redis, NewsAPI + RSS, SMTP + slack-sdk, pytest
+Python + FastAPI, PostgreSQL + SQLAlchemy, Celery + Redis, RSS (feedparser), SMTP + slack-sdk, google-genai, pytest
 See `.claude/rules/tech-stack.md` for full details and rationale.

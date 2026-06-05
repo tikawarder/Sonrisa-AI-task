@@ -18,16 +18,16 @@ We need an admin view too."
 ## Chosen Interpretations (documented decisions)
 
 - **"Important"** = user-defined keywords/topics + optional LLM relevance score (0–1). User sets threshold.
-- **Event sources** = NewsAPI (breaking news) + RSS feeds (flexible, pluggable). No real-time market data (out of scope — requires paid APIs and adds complexity beyond 24h window).
-- **Users** = simple auth (API key or basic JWT). Single-tenant for this prototype.
-- **Admin view** = CRUD for alerts, users, notification channels, and a simple event log. No analytics.
+- **Event sources** = RSS feeds via feedparser. NewsAPI excluded from prototype (requires API key registration; optional extension). No real-time market data (out of scope).
+- **Users** = JWT auth. Single-tenant for this prototype. Admin UI uses HTTP Basic Auth (ADMIN_PASSWORD env var).
+- **Admin view** = CRUD for alerts + read-only event log. No user/channel management in admin UI. No analytics.
 - **Trigger mechanism** = Celery polling every 5 minutes. Not real-time (justified: avoids webhook complexity, sufficient for news).
 
 ## Scope Boundaries
 
 ### In scope
-- Alert creation/management (keywords, categories, schedule)
-- Event detection via NewsAPI + RSS
+- Alert creation/management (keywords, topic, threshold)
+- Event detection via RSS (feedparser)
 - Email notification (SMTP)
 - Slack notification (slack-sdk)
 - Extensible channel architecture (abstract base class)

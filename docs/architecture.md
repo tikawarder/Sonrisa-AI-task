@@ -38,7 +38,7 @@
           │
           ├─── AlertMatcher
           │         ├── KeywordMatcher
-          │         └── LLMRelevanceScorer (gpt-4o-mini)
+          │         └── LLMRelevanceScorer (gemini-2.5-flash)
           │
           └─── NotificationDispatcher
                     ├── EmailChannel (smtplib + Jinja2)
@@ -55,8 +55,8 @@
 ```
 1. POLL (every 5 min, Celery beat)
    │
-   ├── NewsAPI: GET /v2/top-headlines → list[RawEvent]
    └── RSS feeds: feedparser.parse(url) → list[RawEvent]
+       (NewsAPI: optional extension — excluded from prototype; requires API key)
 
 2. NORMALIZE
    │
@@ -69,7 +69,7 @@
 4. MATCH (per active Alert)
    │
    ├── KeywordMatcher: any(kw in event.title + event.description for kw in alert.keywords)
-   └── LLMRelevanceScorer: if alert.use_llm → score = gpt-4o-mini(event_text, alert.topic)
+   └── LLMRelevanceScorer: if alert.use_llm → score = gemini-2.5-flash(event_text, alert.topic)
                            → accept if score >= alert.threshold
 
 5. DISPATCH (per matched Alert)
@@ -105,7 +105,7 @@ The dispatcher takes a matched `(alert, event)` pair, loads the user's configure
 
 ### Admin UI (`src/templates/`)
 
-The admin UI is a set of Jinja2 HTML templates rendered by FastAPI route handlers. It provides CRUD views for alerts, users, and notification channel configurations, plus a read-only event log showing the last 100 matched events and their notification status. The UI is intentionally minimal — no JavaScript framework, no async rendering. It is protected by the same JWT auth as the API, checked via a session cookie.
+The admin UI is a set of Jinja2 HTML templates rendered by FastAPI route handlers. It provides CRUD views for alerts plus a read-only event log showing the last 100 matched events. The UI is intentionally minimal — no JavaScript framework, no async rendering. It is protected by HTTP Basic Auth using the `ADMIN_PASSWORD` environment variable (`secrets.compare_digest` — separate from the JWT auth used by the REST API).
 
 ---
 
@@ -191,18 +191,16 @@ notification_log
 | POST | `/channels/` | Add channel (email/Slack/webhook) |
 | DELETE | `/channels/{id}` | Remove channel |
 
-### Admin (role=admin required)
+### Admin UI (HTTP Basic Auth — ADMIN_PASSWORD)
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/admin/users` | List all users |
-| GET | `/admin/alerts` | List all alerts |
-| GET | `/admin/events` | Event log (last 100) |
-| DELETE | `/admin/users/{id}` | Delete user |
-
-### Health
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/health` | Liveness check |
+| GET | `/admin/` | Dashboard (counts) |
+| GET | `/admin/alerts` | List all alerts + create form |
+| POST | `/admin/alerts/create` | Create alert (form submit) |
+| GET | `/admin/alerts/{id}/edit` | Edit form |
+| POST | `/admin/alerts/{id}/edit` | Update alert (form submit) |
+| POST | `/admin/alerts/{id}/delete` | Delete alert (form submit) |
+| GET | `/admin/events` | Event log (last 100, read-only) |
 
 ---
 
@@ -231,7 +229,7 @@ CHANNEL_REGISTRY = {
 
 ### Adding LLM providers
 
-The `LLMRelevanceScorer` is injected into the `AlertMatcher`. To swap providers, implement a new scorer that returns a `float` for a given `(event_text, topic)` pair and wire it via dependency injection or environment config. Current default: Gemini 2.0 Flash via `google-generativeai` SDK.
+The `LLMRelevanceScorer` is injected into the `AlertMatcher`. To swap providers, implement a new scorer that returns a `float` for a given `(event_text, topic)` pair and wire it via dependency injection or environment config. Current default: `gemini-2.5-flash` via `google-genai` SDK.
 
 ---
 
@@ -240,17 +238,17 @@ The `LLMRelevanceScorer` is injected into the `AlertMatcher`. To swap providers,
 | Layer | Technology | Rationale |
 |-------|-----------|-----------|
 | Backend | Python 3.11 + FastAPI | Async-native; minimal boilerplate; Sonrisa-preferred for AI roles |
-| ORM | SQLAlchemy 2.0 | Type-safe; Alembic migrations; PostgreSQL + SQLite for test |
+| ORM | SQLAlchemy 2.0 | Type-safe; `Base.metadata.create_all()` on startup; PostgreSQL only |
 | Database | PostgreSQL 15 | JSONB for channel configs; TEXT[] for keywords; reliable |
 | Task queue | Celery 5 + Redis 7 | Industry standard for async jobs; periodic tasks built-in |
-| Event sources | NewsAPI + feedparser (RSS) | NewsAPI: structured JSON, free tier; RSS: zero-cost, universal |
+| Event sources | feedparser (RSS) | Zero-cost, no API key; universal format; NewsAPI excluded from prototype |
 | Email | smtplib + Jinja2 | No external SDK; standard library; HTML templates |
 | Slack | slack-sdk | Official SDK; `chat_postMessage` is stable and well-documented |
 | Admin UI | FastAPI + Jinja2 | Zero JS build step; CRUD is all that is needed |
-| AI/LLM | Google Generative AI SDK (gemini-2.0-flash) | User has Gemini API key; free tier generous; fast inference |
+| AI/LLM | google-genai SDK (gemini-2.5-flash) | User has Gemini API key; free tier generous; fast inference |
 | Testing | pytest + httpx | pytest is the Python standard; httpx for async FastAPI test client |
 | Container | Docker + docker-compose | Reproducible dev; required for Celery + Redis + Postgres |
-| Auth | python-jose + passlib | JWT; bcrypt hashing; FastAPI-native pattern |
+| Auth | python-jose + bcrypt (direct) | JWT; bcrypt hashing; passlib excluded (unmaintained, bcrypt 4.x incompatibility) |
 
 **Deliberately NOT used:**
 - LangChain — adds abstraction over a single `generate_content()` call; unjustifiable

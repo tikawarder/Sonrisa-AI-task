@@ -38,7 +38,7 @@
 
 An event is considered **important** if it matches at least one of the following criteria:
 1. **Keyword match** — The event title or description contains one or more user-defined keywords (exact or case-insensitive substring match).
-2. **LLM relevance score ≥ threshold** — An LLM (gpt-4o-mini) scores the event's relevance to the user's alert topic on a 0.0–1.0 scale. The user sets a threshold (default: 0.7). If the score meets or exceeds the threshold, the event is considered important.
+2. **LLM relevance score ≥ threshold** — An LLM (gemini-2.5-flash) scores the event's relevance to the user's alert topic on a 0.0–1.0 scale. The user sets a threshold (default: 0.7). If the score meets or exceeds the threshold, the event is considered important.
 
 **Why this definition:**
 - Pure keyword matching is deterministic, fast, cheap, and explainable — but rigid (misses synonyms, context).
@@ -49,11 +49,12 @@ An event is considered **important** if it matches at least one of the following
 
 ### Ambiguity 2 — Where does event data come from?
 
-**Chosen:** NewsAPI (breaking news, structured JSON) + RSS feeds via `feedparser` (flexible, free).
+**Chosen:** RSS feeds via `feedparser` (zero-cost, no API key). NewsAPI documented as an optional extension but excluded from the prototype.
 
 **Why:**
-- NewsAPI has a free tier, well-documented Python SDK, reliable uptime.
-- RSS is universally available (BBC, Reuters, government emergency feeds) — no API key needed, no rate limits.
+- RSS needs no API key registration — works immediately in a 24h task.
+- RSS is universally available (BBC, Reuters, government emergency feeds).
+- NewsAPI has a free tier but requires registration; adding it is a one-class change when needed.
 - Market data (stocks, crypto) explicitly excluded: requires paid APIs, complex parsing, different latency requirements. Mentioned in brief as an example ("like"), not a requirement.
 
 ### Ambiguity 3 — Who are the users?
@@ -124,7 +125,7 @@ llm_relevance_score(E, A.topic) >= A.threshold
 
 Where:
 - `keyword_match` = case-insensitive substring match of any keyword in `A.keywords` against `E.title + E.description`
-- `llm_relevance_score` = 0.0–1.0 float returned by gpt-4o-mini given the event text and alert topic
+- `llm_relevance_score` = 0.0–1.0 float returned by gemini-2.5-flash given the event text and alert topic
 - `A.threshold` = user-configurable float, default `0.7`
 
 This definition is **measurable** (numeric score), **testable** (unit tests with mock LLM), and **explainable** (keyword match is transparent to users).
@@ -133,16 +134,9 @@ This definition is **measurable** (numeric score), **testable** (unit tests with
 
 ## 5. Concrete Definition: "Flexible"
 
-Flexible means: **adding a new notification channel requires writing exactly one class**.
+Flexible means: **adding a new notification channel requires writing exactly one class** that implements a single `send(subject, body)` method. The channel's destination (email address, Slack token, webhook URL) is stored in its `config` field at creation time — not passed per call.
 
-```python
-class WebhookChannel(NotificationChannel):
-    def send(self, recipient: str, subject: str, body: str) -> bool:
-        # POST to recipient URL
-        ...
-```
-
-No changes to the dispatcher, no config file edits, no registry updates. This is the entire extension contract.
+No changes to the dispatcher, no config file edits, no registry updates needed. This is the entire extension contract.
 
 ---
 

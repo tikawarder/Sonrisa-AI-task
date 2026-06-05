@@ -85,8 +85,8 @@
 
 ## 2026-06-05 — LLM provider
 
-**Chosen:** Gemini 2.0 Flash (`google-generativeai`).
-**Why:** Existing API key. Swapping providers = one class change.
+**Chosen:** `gemini-2.5-flash` via `google-genai` SDK.
+**Why:** Existing API key. Swapping providers = one class change. Note: initial choice was `gemini-2.0-flash` via the deprecated `google-generativeai` package — both were updated during implementation (model name changed twice; SDK switched to the actively maintained `google-genai`).
 
 ---
 
