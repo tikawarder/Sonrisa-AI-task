@@ -68,3 +68,23 @@ All implementation prompts, decisions, and corrections made during the project.
 - Considered splitting into `keyword.py` + `llm.py` + `matcher.py`. Rejected — three small classes in one file is cleaner for this scope. Splitting would add files without adding clarity.
 
 **Corrections:** Replaced deprecated `google.generativeai` with `google-genai` SDK. Updated mock pattern in tests to match new `Client.models.generate_content()` API. 14/14 pass, no warnings.
+
+---
+
+## 2026-06-05 — /implement: notification-dispatcher
+
+**Prompt:** NotificationChannel ABC + EmailChannel (smtplib+Jinja2), SlackChannel (slack-sdk), WebhookChannel (httpx). NotificationDispatcher with CHANNEL_REGISTRY. Tests mocking all external calls.
+
+**Received:** `src/notifications/base.py`, 3 channel implementations, `src/notifications/dispatcher.py`, 12 tests.
+
+**Questioned / rejected:**
+
+- Original ABC signature from tech-stack.md had `send(recipient, subject, body)`. **Changed:** recipient is part of the channel config — passing it again as a method parameter is redundant. `send(subject, body)` is cleaner. The channel knows its own recipient. Documented as deliberate deviation.
+- Considered merging all 3 channels into one file. Rejected — each channel is an independent extension point. One file per channel matches the extensibility contract.
+
+**Corrections:** ABC signature simplified. 12/12 pass.
+
+**Post-validate corrections (/validate run):**
+- `Template()` → `Environment(autoescape=True)` — HTML injection fix in email.py.
+- `WebClient` moved to `__init__` — was recreated on every send().
+- SSRF guard added to WebhookChannel — rejects non-https URLs.

@@ -51,6 +51,19 @@
 
 ---
 
+## 2026-06-05 — Validation: notification-dispatcher
+
+**Rejected:**
+- `Template()` without `autoescape=True` — HTML injection risk if event title/body contains tags. Fixed to `Environment(autoescape=True)`.
+- `WebClient` instantiated on every `send()` — wasteful. Moved to `__init__`.
+- No URL validation in `WebhookChannel` — SSRF risk (user could point to internal services). Added `https://` scheme check as basic guard.
+
+**Accepted:** Library choices (slack-sdk, httpx, jinja2), error handling pattern, dispatcher CHANNEL_REGISTRY, ABC usage.
+
+**Corrections applied:** 3 fixes in email.py, slack.py, webhook.py. 12/12 tests still pass.
+
+---
+
 ## 2026-06-05 — Alembic vs create_all()
 
 **Chosen:** `Base.metadata.create_all()` via `src/db/init_db.py`.
