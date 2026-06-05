@@ -29,6 +29,9 @@ htmlcov/
 .idea/
 *.swp
 
+# Celery beat scheduler state
+celerybeat-schedule*
+
 # OS
 .DS_Store
 Thumbs.db

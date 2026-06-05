@@ -19,15 +19,11 @@ def admin_index(
     db: Session = Depends(get_db),
     _: str = Depends(require_admin_basic_auth),
 ):
-    return templates.TemplateResponse(
-        "admin/index.html",
-        {
-            "request": request,
-            "user_count": db.query(User).count(),
-            "alert_count": db.query(Alert).count(),
-            "event_count": db.query(MatchedEvent).count(),
-        },
-    )
+    return templates.TemplateResponse(request, "admin/index.html", {
+        "user_count": db.query(User).count(),
+        "alert_count": db.query(Alert).count(),
+        "event_count": db.query(MatchedEvent).count(),
+    })
 
 
 @router.get("/alerts", response_class=HTMLResponse)
@@ -37,7 +33,7 @@ def admin_alerts(
     _: str = Depends(require_admin_basic_auth),
 ):
     alerts = db.query(Alert).order_by(Alert.created_at.desc()).all()
-    return templates.TemplateResponse("admin/alerts.html", {"request": request, "alerts": alerts})
+    return templates.TemplateResponse(request, "admin/alerts.html", {"alerts": alerts})
 
 
 @router.get("/events", response_class=HTMLResponse)
@@ -47,4 +43,4 @@ def admin_events(
     _: str = Depends(require_admin_basic_auth),
 ):
     events = db.query(MatchedEvent).order_by(MatchedEvent.matched_at.desc()).limit(100).all()
-    return templates.TemplateResponse("admin/events.html", {"request": request, "events": events})
+    return templates.TemplateResponse(request, "admin/events.html", {"events": events})

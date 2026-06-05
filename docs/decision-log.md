@@ -2,6 +2,21 @@
 
 ---
 
+## 2026-06-05 — Validation: integration fixes
+
+**Rejected:**
+- `pydantic[email]` missing from `requirements.txt` — BLOCKING. `EmailStr` fails to import at startup without `email-validator`. Added `pydantic[email]>=2.0.0`.
+- `python-multipart` missing from `requirements.txt` — BLOCKING. `OAuth2PasswordRequestForm` requires it; FastAPI 0.111+ raises `RuntimeError` at startup without it. Added `python-multipart>=0.0.9`.
+- `Jinja2Templates.TemplateResponse(name, context)` old API — BLOCKING. Starlette 1.x removed the old positional signature. All 3 admin routes crashed with `TypeError: unhashable type: 'dict'`. Fixed to new API: `TemplateResponse(request, name, context)`.
+
+**Accepted:** Dockerfile, `.env.example`, `lifespan` startup pattern, admin template content.
+
+**Corrections applied:** 3 fixes in `requirements.txt`; admin router rewritten with Starlette 1.x API. All 3 admin routes return 200.
+
+**Post-integration finding:** `passlib[bcrypt]` replaced with direct `bcrypt` calls — passlib is unmaintained and crashes with bcrypt 4.x (`detect_wrap_bug` calls `hashpw` with a 72+ byte test vector that bcrypt 4.x rejects). The unit test for `hash_password` mocked this function specifically to avoid the error — which masked the production failure. Lesson: a mock that "fixes" a test can hide the real runtime bug. Integration testing would have caught this earlier.
+
+---
+
 ## 2026-06-05 — What counts as an "important" event?
 
 **Chosen:** Keyword match OR LLM relevance score ≥ user-defined threshold (default 0.7).

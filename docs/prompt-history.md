@@ -122,3 +122,20 @@ All implementation prompts, decisions, and corrections made during the project.
 **What I accepted:** JWT using python-jose + passlib, `secrets.compare_digest` for Basic Auth, Jinja2Templates autoescape (FastAPI default for `.html`), dependency injection pattern, router structure matching architecture.md, SSRF guard in webhook channel (carried forward).
 
 **Corrections made:** 5 fixes applied during validation. 51/51 tests pass.
+
+---
+
+## 2026-06-05 — integration: startup and admin UI fixes
+
+**Prompt given:** Run the app end-to-end via docker compose, fix whatever breaks.
+
+**What I received:** 3 BLOCKING runtime errors caught during integration testing.
+
+**What I rejected:**
+- Missing `pydantic[email]` in requirements.txt — app crashed at import with `ImportError: email-validator is not installed`.
+- Missing `python-multipart` in requirements.txt — required by `OAuth2PasswordRequestForm`.
+- Old Starlette `TemplateResponse(name, context)` API — removed in Starlette 1.x. All admin routes crashed with `TypeError: unhashable type: 'dict'`. None of this was caught by unit tests because they mock the DB and don't render real templates.
+
+**What I accepted:** Dockerfile structure, lifespan pattern, template content.
+
+**Corrections made:** 2 packages added to requirements.txt; admin router updated to Starlette 1.x API `TemplateResponse(request, name, context)`. All 3 admin routes verified 200 OK.
