@@ -53,3 +53,18 @@ All implementation prompts, decisions, and corrections made during the project.
 - `asyncio_mode = auto` in `pytest.ini` caused a warning — `pytest-asyncio` not installed and not needed yet. Removed.
 
 **Corrections:** `feed.feed` → `feed.get("feed", {})` throughout `rss.py`. Tests confirmed: 6/6 pass.
+
+---
+
+## 2026-06-05 — /implement: alert-matcher
+
+**Prompt:** KeywordMatcher + LLMRelevanceScorer (Gemini) + AlertMatcher orchestrator. AlertConfig dataclass to decouple from ORM. Unit tests with mocked LLM.
+
+**Received:** `src/matching/matcher.py` with 5 classes, `tests/test_alert_matcher.py` with 14 tests.
+
+**Questioned / rejected:**
+
+- `google.generativeai` was used in the initial output — **caught by warning:** package is fully deprecated, replaced by `google-genai`. Switched to `from google import genai` with the new `Client` API. Updated `requirements.txt` accordingly. Good catch — old package receives no bug fixes.
+- Considered splitting into `keyword.py` + `llm.py` + `matcher.py`. Rejected — three small classes in one file is cleaner for this scope. Splitting would add files without adding clarity.
+
+**Corrections:** Replaced deprecated `google.generativeai` with `google-genai` SDK. Updated mock pattern in tests to match new `Client.models.generate_content()` API. 14/14 pass, no warnings.
