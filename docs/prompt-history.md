@@ -139,3 +139,17 @@ All implementation prompts, decisions, and corrections made during the project.
 **What I accepted:** Dockerfile structure, lifespan pattern, template content.
 
 **Corrections made:** 2 packages added to requirements.txt; admin router updated to Starlette 1.x API `TemplateResponse(request, name, context)`. All 3 admin routes verified 200 OK.
+
+---
+
+## 2026-06-05 — implement: admin-crud
+
+**Prompt given:** Add HTML CRUD forms to the admin UI so alerts can be created, edited and deleted without using the Swagger UI.
+
+**What I received:** Admin router extended with 4 new POST/GET endpoints; alerts.html updated with create form + action buttons; new alert_edit.html template; 9 new tests.
+
+**What I rejected:** Nothing — implementation was clean on first pass.
+
+**What I accepted:** Form-based POST with `Form(...)` dependencies; checkbox handling (`"on"/"off"`); comma-separated keyword parsing; `303 See Other` redirect after every mutation; `confirm()` dialog on delete.
+
+**Corrections made:** None. 9/9 tests pass, 60/60 total.

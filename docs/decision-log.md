@@ -2,6 +2,51 @@
 
 ---
 
+## 2026-06-05 — Validation: admin-crud
+
+**Rejected:**
+- Unused `request: Request` parameter in `admin_create_alert` — the handler only redirects, never renders a template. Removed.
+
+**Accepted:** Form-based CRUD pattern, `303 See Other` redirect after mutations, `uuid.UUID` type validation on path params, checkbox handling, Jinja2 autoescape covers XSS.
+
+**Known limitations (not fixed — prototype scope):**
+- No CSRF protection on mutation endpoints — acceptable for single-admin prototype.
+- No server-side threshold range validation — HTML min/max attributes provide client-side guard only.
+
+**Corrections applied:** 1 fix. 9/9 tests pass, 60/60 total.
+
+---
+
+## 2026-06-05 — Decision: "Admin UI interaction model"
+
+**Options considered:**
+1. Jinja2 CRUD forms — full HTML forms for alert create/edit/delete in the admin UI
+2. Keep Swagger + document it — use /docs as the management surface, add README guide
+3. CLI script — Python management script for command-line alert management
+
+**Chosen:** Jinja2 CRUD forms
+
+**Reason:** The brief explicitly asks for an "admin view" — a Swagger UI is a developer tool, not an admin surface. Jinja2 and FastAPI are already in the stack, so no new dependencies are needed. This is the only option that actually fulfills the brief's intent.
+
+**Tradeoffs accepted:** 2-3 hours of additional development. No mobile-friendly design. Form validation is minimal — acceptable for a single-admin prototype.
+
+---
+
+## 2026-06-05 — Decision: "Polling vs event-driven architecture"
+
+**Options considered:**
+1. Keep polling (current) — Celery beat every 5 minutes, no changes
+2. Reduce polling interval — change beat_schedule to 60 seconds
+3. Kafka — event-driven architecture, RSS producers, consumer groups
+
+**Chosen:** Keep polling (current)
+
+**Reason:** RSS feeds themselves update every 5-15 minutes — reducing the interval or adding Kafka would not reduce end-to-end latency, only add complexity. Kafka requires a broker, topic management, and consumer groups: 2-3 days of work for zero latency improvement on RSS sources. The 5-minute polling interval is an RSS constraint, not an architectural one.
+
+**Tradeoffs accepted:** Empty task runs when no new articles exist. Acceptable for a prototype — a production system would add RSS ETag/Last-Modified caching to avoid redundant fetches.
+
+---
+
 ## 2026-06-05 — Validation: integration fixes
 
 **Rejected:**

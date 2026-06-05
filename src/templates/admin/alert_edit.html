@@ -1,0 +1,18 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<h1>Edit Alert</h1>
+<form method="post" action="/admin/alerts/{{ alert.id }}/edit" style="background:white;padding:1rem;border-radius:4px;">
+    <table style="width:auto;border:none;">
+        <tr><td>Name</td><td><input name="name" value="{{ alert.name }}" required style="width:300px"></td></tr>
+        <tr><td>Keywords</td><td><input name="keywords" value="{{ alert.keywords | join(', ') }}" style="width:300px"></td></tr>
+        <tr><td>Topic (LLM)</td><td><input name="topic" value="{{ alert.topic or '' }}" style="width:300px"></td></tr>
+        <tr><td>Use LLM</td><td><input type="checkbox" name="use_llm" {{ "checked" if alert.use_llm }}></td></tr>
+        <tr><td>Threshold</td><td><input name="threshold" type="number" step="0.1" min="0" max="1" value="{{ alert.threshold }}" style="width:80px"></td></tr>
+        <tr><td>Active</td><td><input type="checkbox" name="is_active" {{ "checked" if alert.is_active }}></td></tr>
+        <tr><td></td><td>
+            <button type="submit">Save</button>
+            &nbsp;<a href="/admin/alerts">Cancel</a>
+        </td></tr>
+    </table>
+</form>
+{% endblock %}
