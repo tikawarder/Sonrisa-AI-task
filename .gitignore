@@ -1,0 +1,33 @@
+# Internal files - do not submit to Sonrisa
+docs/inner_docs/
+
+# Environment & secrets
+.env
+.env.*
+*.key
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+env/
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
