@@ -1,4 +1,4 @@
-Read the file at task-04-feature-design-and-build.docx (use python-docx or extract XML) and also read .claude/rules/project-context.md.
+Read the file at docs/task-04-feature-design-and-build.docx (use python-docx or extract XML) and also read .claude/rules/project-context.md.
 
 Then produce TWO documents:
 
