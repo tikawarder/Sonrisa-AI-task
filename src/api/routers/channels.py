@@ -26,6 +26,7 @@ def create_channel(body: ChannelCreate, db: Session = Depends(get_db), user: Use
         user_id=user.id,
         type=ChannelType(body.type),
         config=body.config,
+        is_active=True,
     )
     db.add(channel)
     db.commit()
