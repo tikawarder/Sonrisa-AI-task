@@ -1,62 +1,40 @@
 # Prompt History
 
-This file records all implementation prompts used during the project, including what was accepted,
-what was rejected, and corrections made. Format per `.claude/rules/process.md`.
+All implementation prompts, decisions, and corrections made during the project.
 
 ---
 
-## 2026-06-05 — Planning Session: /brief
+## 2026-06-05 — /brief: scope + architecture
 
-**Prompt given:**
+**Prompt:** Parse the PM brief, identify ambiguities, produce `brief-interpretation.md` and `architecture.md`.
 
-```
-Read the file at docs/task-04-feature-design-and-build.docx and also read .claude/rules/project-context.md.
+**Received:** 8 ambiguities documented with interpretations, concrete definitions of "important event" and "flexible channel", scope table, system diagram, 5-table schema, 14 API endpoints, tech stack table.
 
-Produce:
-1. docs/brief-interpretation.md — scope definition with ambiguities, interpretations, and rationale
-2. docs/architecture.md — system architecture with component responsibilities, schema, API endpoints, extensibility points
-3. Log this session as first entry in docs/prompt-history.md
+**Questioned / rejected:**
 
-After writing both files, summarize in Hungarian what decisions were made and flag anything
-that needs confirmation before implementation starts.
-```
+- Alpha Vantage for market data — dropped. Free tier is 5 req/min, useless. Brief lists it as an example, not a requirement.
+- `categories` table in schema — dropped. `keywords TEXT[]` on the alert covers this without an extra join table.
+- "Plugin registry with dynamic import" for channels — replaced with ABC + factory dict. A registry is 200 lines of infrastructure for 3 known channel types.
+- Asked: does the system need NewsAPI or is RSS-only enough to start? Chose RSS-only — no API key registration needed, works immediately. NewsAPI stays as optional extension.
+- Asked: which LLM provider? OpenAI was the default — switched to Gemini (existing API key).
 
-**What I received:**
+**Corrections:** Added `event_hash` and `relevance_score` to `matched_events` — both missing from first draft.
 
-Two complete documents: `brief-interpretation.md` covering all 8 identified ambiguities with
-rationale for each interpretation, a concrete measurable definition of "important event" and
-"flexible channel", and a scope table. `architecture.md` covering system diagram, data flow
-pipeline, component responsibilities, DB schema (5 tables), API endpoints (14 routes), 3
-extensibility points, and a tech stack table.
+---
 
-**What I rejected / questioned:**
+## 2026-06-05 — /implement: db-schema
 
-- Initial draft included "market movements" in scope with a note about using Alpha Vantage API.
-  **Rejected:** Alpha Vantage free tier has 5 requests/minute — insufficient for any real use,
-  and the brief lists market movements as one example of "that kind of thing", not a requirement.
-  Moved to out-of-scope with explicit rationale.
+**Prompt:** SQLAlchemy 2.0 models, docker-compose, requirements.txt, pytest conftest + model tests.
 
-- Initial schema included a `categories` table for categorizing events.
-  **Rejected:** Over-engineering. Keywords + LLM topic description cover this without an
-  extra join table. Kept the schema flat.
+**Received:** 22 files — 5 models, Alembic setup, docker-compose with 4 services, 6 model tests.
 
-- First version of the channel extensibility section described a "plugin registry with dynamic
-  import". **Rejected:** This is the trap documented in `belso-csapdak.md`. A simple factory
-  dict `CHANNEL_REGISTRY = {"email": EmailChannel, ...}` is the correct answer. Revised.
+**Questioned / rejected:**
 
-**What I accepted:**
+- Asked: why Docker, why not a monolith? Docker is unavoidable — Celery needs Redis, Redis isn't installed natively. Valid question, accepted Docker.
+- Asked: can each phase be tested independently? Yes — `docker-compose up db redis` + `pytest tests/test_models.py` runs standalone. Confirmed before moving on.
+- `alembic/script.py.mako` missing from output — caught. Without it `alembic revision` throws MakoException. Added.
+- `pytest.ini` missing — caught. pytest can't resolve `src` package without `pythonpath = .`.
+- Asked: is Alembic overkill for a 24h task? Yes — removed entirely. `Base.metadata.create_all()` is sufficient, replaced with `src/db/init_db.py`. Logged in decision-log.md.
+- Flagged `sessionmaker(bind=connection)` as potentially deprecated in SQLAlchemy 2.0 — verified with a manual isolation test before accepting.
 
-- 5-table schema (users, alerts, notification_channels, matched_events, notification_log)
-- Abstract base class pattern for NotificationChannel
-- LLM relevance scoring as optional (use_llm flag per alert)
-- Celery + Redis for polling, not Celery Beat DB scheduler
-- JWT auth with two roles (user, admin)
-- Admin view = CRUD + read-only event log (last 100)
-
-**Corrections made:**
-
-1. Removed Alpha Vantage / market data from scope
-2. Collapsed `categories` table into `keywords TEXT[]` on `alerts`
-3. Replaced plugin registry with factory dict pattern
-4. Added `event_hash` dedup field to `matched_events` — was missing from initial draft
-5. Added `relevance_score FLOAT` to `matched_events` — needed for audit/debug visibility
+**Corrections:** Removed Alembic (5 files), added `init_db.py`, added `pytest.ini`.
