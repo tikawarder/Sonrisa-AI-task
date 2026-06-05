@@ -38,3 +38,18 @@ All implementation prompts, decisions, and corrections made during the project.
 - Flagged `sessionmaker(bind=connection)` as potentially deprecated in SQLAlchemy 2.0 — verified with a manual isolation test before accepting.
 
 **Corrections:** Removed Alembic (5 files), added `init_db.py`, added `pytest.ini`.
+
+---
+
+## 2026-06-05 — /implement: event-sources
+
+**Prompt:** EventSource ABC + RSSSource implementation using feedparser. Event as Pydantic model. Unit tests with mocked network calls.
+
+**Received:** `src/sources/base.py` (Event model + ABC), `src/sources/rss.py` (RSSSource), `tests/test_event_sources.py` (6 tests).
+
+**Questioned / rejected:**
+
+- Initial `rss.py` used `feed.feed` and `feed.entries` attribute access. **Caught by tests:** plain dict mocks don't support attribute access — 3 tests failed immediately. Fixed to `feed.get("feed", {})` and `feed.get("entries", [])` — works with both feedparser's real `FeedParserDict` and plain dict mocks.
+- `asyncio_mode = auto` in `pytest.ini` caused a warning — `pytest-asyncio` not installed and not needed yet. Removed.
+
+**Corrections:** `feed.feed` → `feed.get("feed", {})` throughout `rss.py`. Tests confirmed: 6/6 pass.

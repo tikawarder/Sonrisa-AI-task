@@ -30,6 +30,13 @@
 
 ---
 
+## 2026-06-05 — Push vs pull model
+
+**Chosen:** Push — Celery worker polls every 5 minutes and sends notifications automatically.
+**Why:** Email and Slack notifications can't be pull-based — you can't wait for the user to open the app. The brief explicitly asks for notifications, which requires a background process.
+
+---
+
 ## 2026-06-05 — Polling interval
 
 **Chosen:** Celery task every 5 minutes.
