@@ -88,3 +88,18 @@ All implementation prompts, decisions, and corrections made during the project.
 - `Template()` → `Environment(autoescape=True)` — HTML injection fix in email.py.
 - `WebClient` moved to `__init__` — was recreated on every send().
 - SSRF guard added to WebhookChannel — rejects non-https URLs.
+
+---
+
+## 2026-06-05 — /implement: celery-worker
+
+**Prompt:** Celery app setup + `fetch_and_dispatch` periodic task. Glues together RSSSource → AlertMatcher → NotificationDispatcher → DB persistence. Hash-based dedup. Tests with mocked DB and pipeline components.
+
+**Received:** `src/workers/celery_app.py`, `src/workers/tasks.py`, `tests/test_worker_task.py` (5 tests).
+
+**Questioned / rejected:**
+
+- Test asserted `commit()` called when no alerts exist — wrong. Task returns early before any DB writes when `db_alerts` is empty. Fixed assertion to `assert_not_called()`. The task logic is correct; the test assumption was wrong.
+- Considered separate Celery Beat process in docker-compose. Kept `worker --beat` combined for simplicity — adding a 5th service adds complexity with no benefit for a prototype.
+
+**Corrections:** Fixed one wrong test assertion. 5/5 pass.

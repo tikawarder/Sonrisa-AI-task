@@ -51,6 +51,18 @@
 
 ---
 
+## 2026-06-05 — Validation: celery-worker
+
+**Rejected:**
+- `docker-compose.yml` worker command missing `--beat` flag — BLOCKING. Without it the beat scheduler never starts, the periodic task never runs. Fixed.
+- `_hash()` used only url+published_at — events with no URL would collide across different titles. Added `title` to the hash key.
+
+**Accepted:** Task structure, try/finally DB cleanup pattern, rollback on exception, dedup logic, `finally` verified to run after `return` inside `try`.
+
+**Corrections applied:** `--beat` added to docker-compose worker command; `title` added to hash function.
+
+---
+
 ## 2026-06-05 — Validation: notification-dispatcher
 
 **Rejected:**
