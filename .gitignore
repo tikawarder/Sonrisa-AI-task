@@ -4,6 +4,7 @@ docs/inner_docs/
 # Environment & secrets
 .env
 .env.*
+!.env.example
 *.key
 *.pem
 

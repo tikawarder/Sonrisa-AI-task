@@ -105,6 +105,18 @@
 
 ---
 
+## 2026-06-05 — Validation: readme + startup
+
+**Rejected:**
+- Missing `Dockerfile` — BLOCKING. `docker-compose.yml` has `build: .` for both `app` and `worker`, but no Dockerfile existed. `docker-compose up --build` would fail immediately. Added `Dockerfile` with `python:3.13-slim`.
+- `.gitignore` pattern `.env.*` — BLOCKING. Matches `.env.example`, so the file would never be committed. Fixed with `!.env.example` negation rule.
+
+**Accepted:** `lifespan` context manager pattern for `init_db()` (correct FastAPI 0.95+ startup API); README accuracy (endpoints, ports, env vars all match implementation); `.env.example` content.
+
+**Corrections applied:** `Dockerfile` created; `.gitignore` negation added. 51/51 tests still pass.
+
+---
+
 ## 2026-06-05 — Alembic vs create_all()
 
 **Chosen:** `Base.metadata.create_all()` via `src/db/init_db.py`.
